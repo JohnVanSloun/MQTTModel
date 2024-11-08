@@ -41,8 +41,12 @@ public class Publisher {
      * 
      * param: message is the message that is to be sent to the server.
      */
-    public void publish(String subject, String message) {
+    public boolean publish(String subject, String message) {
         out.println("<" + this.name + ",PUB," + subject + "," + message + ">");
+
+        String servRep = in.readLine();
+
+        if(servRep.equals("<ERROR: Not Subscribed>");
     }
 
     /**
