@@ -30,7 +30,7 @@ public class Publisher {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            out.println("<" + this.name + ",CONN>");
+            out.println(this.name + ",CONN");
         } catch(IOException e) {
             System.out.println("Error opening a connection with the server.");
         }
@@ -42,11 +42,16 @@ public class Publisher {
      * param: message is the message that is to be sent to the server.
      */
     public boolean publish(String subject, String message) {
-        out.println("<" + this.name + ",PUB," + subject + "," + message + ">");
+        try {
+            out.println(this.name + ",PUB," + subject + "," + message);
 
-        String servRep = in.readLine();
+            String servRep = in.readLine();
 
-        if(servRep.equals("<ERROR: Not Subscribed>");
+            return !servRep.equals("ERROR: Subject Not Found");
+        } catch(IOException e) {
+            System.out.println("Communication error with server while publishing");
+            return false;
+        }
     }
 
     /**
@@ -54,11 +59,11 @@ public class Publisher {
      */
     public void disconnect() {
         try {
-            out.println("<DISC>");
+            out.println("DISC");
             String disconnectAck = in.readLine();
 
-            if(disconnectAck.equals("<DISC_ACK>")) {
-                System.out.println("Client closing");
+            if(disconnectAck.equals("DISC_ACK")) {
+                System.out.println(disconnectAck);
                 out.close();
                 in.close();
                 socket.close();

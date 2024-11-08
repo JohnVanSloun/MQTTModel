@@ -1,4 +1,10 @@
-
+import java.net.Socket;
+import java.io.PrintWriter;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class Subscriber {
     private String name;
@@ -24,7 +30,7 @@ public class Subscriber {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            out.println("<" + this.name + ",CONN>");
+            out.println(this.name + ",CONN");
         } catch(IOException e) {
             System.out.println("Error opening a connection with the server.");
         }
@@ -36,7 +42,7 @@ public class Subscriber {
      * param: subject the subject
      */
     public void subscribe(String subject) {
-        out.println("<" + this.name + ",SUB," + subject + ">");
+        out.println(this.name + ",SUB," + subject);
     }
 
     /**
@@ -44,11 +50,11 @@ public class Subscriber {
      */
     public void disconnect() {
         try {
-            out.println("<DISC>");
+            out.println("DISC");
             String disconnectAck = in.readLine();
 
-            if(disconnectAck.equals("<DISC_ACK>")) {
-                System.out.println("Client closing");
+            if(disconnectAck.equals("DISC_ACK")) {
+                System.out.println(disconnectAck);
                 out.close();
                 in.close();
                 socket.close();
@@ -56,5 +62,16 @@ public class Subscriber {
         } catch(IOException e) {
             System.out.println("Error disconnecting");
         }
+    }
+    
+    public static void main(String[] args) {
+        try {
+            Subscriber subscriber = new Subscriber("sub1");
+            subscriber.connect(InetAddress.getLocalHost(), 4444);
+            subscriber.disconnect();
+        } catch(UnknownHostException e) {
+            System.out.println("Host not known");
+        }
+        
     }
 }
