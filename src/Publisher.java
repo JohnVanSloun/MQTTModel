@@ -41,8 +41,8 @@ public class Publisher {
      * 
      * param: message is the message that is to be sent to the server.
      */
-    public void sendMessage(String message) {
-        out.write(message);
+    public void publish(String subject, String message) {
+        out.write("<" + this.name + ",PUB," + subject + "," + message + ">");
     }
 
     /**
