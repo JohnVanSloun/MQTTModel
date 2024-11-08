@@ -30,7 +30,7 @@ public class Publisher {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            out.write("<" + this.name + ",CONN>\n");
+            out.println("<" + this.name + ",CONN>");
         } catch(IOException e) {
             System.out.println("Error opening a connection with the server.");
         }
@@ -50,10 +50,15 @@ public class Publisher {
      */
     public void disconnect() {
         try {
-            System.out.println("Client closing");
-            out.close();
-            in.close();
-            socket.close();
+            out.println("<DISC>");
+            String disconnectAck = in.readLine();
+
+            if(disconnectAck.equals("<DISC_ACK>")) {
+                System.out.println("Client closing");
+                out.close();
+                in.close();
+                socket.close();
+            }
         } catch(IOException e) {
 
         }
