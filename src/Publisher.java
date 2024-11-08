@@ -37,12 +37,12 @@ public class Publisher {
     }
 
     /**
-     * Sends a message over the socket to the server.
+     * Publish a message over the socket to the server.
      * 
      * param: message is the message that is to be sent to the server.
      */
     public void publish(String subject, String message) {
-        out.write("<" + this.name + ",PUB," + subject + "," + message + ">");
+        out.println("<" + this.name + ",PUB," + subject + "," + message + ">");
     }
 
     /**
@@ -60,7 +60,7 @@ public class Publisher {
                 socket.close();
             }
         } catch(IOException e) {
-
+            System.out.println("Error disconnecting");
         }
     }
 
