@@ -31,11 +31,6 @@ public class Publisher {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             out.write("<" + this.name + ",CONN>\n");
-
-            System.out.println("Client closing");
-            out.close();
-            in.close();
-            socket.close();
         } catch(IOException e) {
             System.out.println("Error opening a connection with the server.");
         }
@@ -47,20 +42,28 @@ public class Publisher {
      * param: message is the message that is to be sent to the server.
      */
     public void sendMessage(String message) {
-        return;
+        out.write(message);
     }
 
     /**
      * Disconnects from the server.
      */
     public void disconnect() {
-        return;
+        try {
+            System.out.println("Client closing");
+            out.close();
+            in.close();
+            socket.close();
+        } catch(IOException e) {
+
+        }
     }
 
     public static void main(String[] args) {
         try {
             Publisher publisher = new Publisher("pub1");
             publisher.connect(InetAddress.getLocalHost(), 4444);
+            publisher.disconnect();
         } catch(UnknownHostException e) {
             System.out.println("Host not known");
         }
