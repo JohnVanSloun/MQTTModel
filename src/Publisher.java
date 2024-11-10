@@ -22,7 +22,7 @@ public class Publisher {
      * param: host is the host ip address to connect to.
      * param: port is the port number to connect the socket to.
      */
-    public void connect(InetAddress host, int port) {
+    public boolean connect(InetAddress host, int port) {
         try {
             socket = new Socket(host, port);
             System.out.println("Connected");
@@ -31,8 +31,14 @@ public class Publisher {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             out.println(this.name + ",CONN");
+
+            if(!in.readLine().equals("CONN_ACK")) {
+                return false;
+            }
+            return true;
         } catch(IOException e) {
             System.out.println("Error opening a connection with the server.");
+            return false;
         }
     }
 
@@ -62,12 +68,10 @@ public class Publisher {
             out.println("DISC");
             String disconnectAck = in.readLine();
 
-            if(disconnectAck.equals("DISC_ACK")) {
-                System.out.println(disconnectAck);
-                out.close();
-                in.close();
-                socket.close();
-            }
+            System.out.println(disconnectAck);
+            out.close();
+            in.close();
+            socket.close();
         } catch(IOException e) {
             System.out.println("Error disconnecting");
         }
@@ -77,6 +81,7 @@ public class Publisher {
         try {
             Publisher publisher = new Publisher("pub1");
             publisher.connect(InetAddress.getLocalHost(), 4444);
+            publisher.publish("NEWS", "A plane has hit the second tower");
             publisher.disconnect();
         } catch(UnknownHostException e) {
             System.out.println("Host not known");

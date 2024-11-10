@@ -68,6 +68,7 @@ public class Subscriber {
         try {
             Subscriber subscriber = new Subscriber("sub1");
             subscriber.connect(InetAddress.getLocalHost(), 4444);
+            subscriber.subscribe("NEWS");
             subscriber.disconnect();
         } catch(UnknownHostException e) {
             System.out.println("Host not known");
