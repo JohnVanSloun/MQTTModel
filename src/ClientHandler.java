@@ -32,14 +32,20 @@ public class ClientHandler implements Runnable {
                 List<String> msgParts = Arrays.asList(message.split(","));
 
                 if(msgParts.size() == 1 && msgParts.get(0).equals("DISC")) {
-                    System.out.println("Client Disconecting");
+                    server.unsubscribe(this);
                     out.println("DISC_ACK");
+                    System.out.println("Client Disconecting");
                     break;
                 } else if(msgParts.size() == 2) {
                     System.out.println("Client: " + msgParts.get(0) + " has connected");
                     out.println("CONN_ACK");
                 } else if(msgParts.size() == 3 && msgParts.get(1).equals("SUB")) {
-                    out.println("ACK");
+                    if(server.subscribe(msgParts.get(2), this)) {
+                        System.out.println(msgParts.get(0) + " subscribed");
+                        out.println("ACK");
+                    } else {
+                        System.out.println("Error: Could not subscribe");
+                    }
                 } else if(msgParts.size() == 4 && msgParts.get(1).equals("PUB")) {
                     if(server.publish(msgParts.get(2), msgParts.get(3))) {
                         out.println("ACK");
@@ -49,13 +55,14 @@ public class ClientHandler implements Runnable {
                         System.out.println("ERROR: Not Subscribed");
                     }
                 } else {
+                    System.out.println("Here");
                     out.println("ACK");
                 }
             }
 
-            // out.close();
-            // in.close();
-            // socket.close();
+            out.close();
+            in.close();
+            socket.close();
         } catch(IOException e) {
             e.printStackTrace();
         }

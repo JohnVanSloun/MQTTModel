@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Scanner;
 
 public class Publisher {
     private String name;
@@ -22,7 +23,7 @@ public class Publisher {
      * param: host is the host ip address to connect to.
      * param: port is the port number to connect the socket to.
      */
-    public boolean connect(InetAddress host, int port) {
+    public void connect(InetAddress host, int port) {
         try {
             socket = new Socket(host, port);
             System.out.println("Connected");
@@ -32,13 +33,9 @@ public class Publisher {
 
             out.println(this.name + ",CONN");
 
-            if(!in.readLine().equals("CONN_ACK")) {
-                return false;
-            }
-            return true;
+            System.out.println(in.readLine());
         } catch(IOException e) {
             System.out.println("Error opening a connection with the server.");
-            return false;
         }
     }
 
@@ -47,16 +44,15 @@ public class Publisher {
      * 
      * param: message is the message that is to be sent to the server.
      */
-    public boolean publish(String subject, String message) {
+    public void publish(String subject, String message) {
         try {
             out.println(this.name + ",PUB," + subject + "," + message);
 
             String servRep = in.readLine();
 
-            return !servRep.equals("ERROR: Subject Not Found");
+            System.out.println(servRep);
         } catch(IOException e) {
             System.out.println("Communication error with server while publishing");
-            return false;
         }
     }
 
@@ -79,13 +75,59 @@ public class Publisher {
 
     public static void main(String[] args) {
         try {
-            Publisher publisher = new Publisher("pub1");
-            publisher.connect(InetAddress.getLocalHost(), 4444);
-            publisher.publish("NEWS", "A plane has hit the second tower");
-            publisher.disconnect();
+            Publisher publisher = null; //= new Publisher("pub1");
+            Scanner userIn = new Scanner(System.in);
+            String command = "";
+            System.out.println("Commands:\n- connect\n- publish\n- disconnect");
+
+            while(true) {
+                System.out.print("Enter Command: ");
+                command = userIn.nextLine();
+
+                if(command.equals("connect")) {
+                    if(publisher != null) {
+                        System.out.println("A publisher has already been connected");
+                        continue;
+                    } else {
+                        System.out.println("Choose a name for the publisher: ");
+
+                        String name = userIn.nextLine();
+                        publisher = new Publisher(name);
+
+                        publisher.connect(InetAddress.getLocalHost(), 4444);
+                    }
+                } else if(command.equals("disconnect")) {
+                    if(publisher == null) {
+                        System.out.println("Please connect a publisher first");
+                        continue;
+                    } else {
+                        publisher.disconnect();
+                        break;
+                    }
+                } else if(command.equals("publish")) {
+                    if(publisher == null) {
+                        System.out.println("Please connect a publisher first");
+                        continue;
+                    } else {
+                        System.out.println("Enter Subject (e.g. NEWS or WEATHER): ");
+                        String subject = userIn.nextLine();
+
+                        System.out.println("Enter Message: ");
+                        String message = userIn.nextLine();
+
+                        publisher.publish(subject, message);
+                    }
+                } else {
+                    System.out.println("Please enter a valid command,");
+                    System.out.println("Commands:\n- connect\n- publish\n- disconnect");
+                }
+            }
+            // Publisher publisher = new Publisher("pub1");
+            // publisher.connect(InetAddress.getLocalHost(), 4444);
+            // publisher.publish("NEWS", "A plane has hit the second tower");
+            // publisher.disconnect();
         } catch(UnknownHostException e) {
             System.out.println("Host not known");
         }
-        
     }
 }

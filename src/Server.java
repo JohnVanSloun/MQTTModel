@@ -27,12 +27,23 @@ public class Server {
     }
 
     public boolean subscribe(String subject, ClientHandler sub) {
-        if(subscribers.containsKey(subject)) {
-            subscribers.get(subject).add(sub);
-            return true;
-        } else {
+        try {
+            Socket subSocket = sub.getSocket();
+            PrintWriter subOut = new PrintWriter(subSocket.getOutputStream(), true);
+
+            if(subscribers.containsKey(subject)) {
+                subscribers.get(subject).add(sub);
+                subOut.println("SUB_ACK");
+                return true;
+            } else {
+                subOut.println("Failed to subscribe to given subject");
+                return false;
+            }
+        } catch(IOException e) {
+            e.printStackTrace();
             return false;
         }
+        
     }
 
     public void unsubscribe(ClientHandler sub) {

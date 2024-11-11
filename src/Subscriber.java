@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Scanner;
 
 public class Subscriber {
     private String name;
@@ -31,6 +32,8 @@ public class Subscriber {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             out.println(this.name + ",CONN");
+
+            System.out.println(in.readLine());
         } catch(IOException e) {
             System.out.println("Error opening a connection with the server.");
         }
@@ -43,6 +46,14 @@ public class Subscriber {
      */
     public void subscribe(String subject) {
         out.println(this.name + ",SUB," + subject);
+
+        try {
+            String message = in.readLine();
+
+            System.out.println(message);
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -53,12 +64,10 @@ public class Subscriber {
             out.println("DISC");
             String disconnectAck = in.readLine();
 
-            if(disconnectAck.equals("DISC_ACK")) {
-                System.out.println(disconnectAck);
-                out.close();
-                in.close();
-                socket.close();
-            }
+            System.out.println(disconnectAck);
+            out.close();
+            in.close();
+            socket.close();
         } catch(IOException e) {
             System.out.println("Error disconnecting");
         }
@@ -66,10 +75,54 @@ public class Subscriber {
     
     public static void main(String[] args) {
         try {
-            Subscriber subscriber = new Subscriber("sub1");
-            subscriber.connect(InetAddress.getLocalHost(), 4444);
-            subscriber.subscribe("NEWS");
-            subscriber.disconnect();
+            Subscriber subscriber = null;
+            Scanner userIn = new Scanner(System.in);
+            String command = "";
+            System.out.println("Commands:\n- connect\n- subscribe\n- disconnect");
+
+            while(true) {
+                System.out.print("Enter Command: ");
+                command = userIn.nextLine();
+
+                if(command.equals("connect")) {
+                    if(subscriber != null) {
+                        System.out.println("A subscriber has already been connected");
+                        continue;
+                    } else {
+                        System.out.println("Choose a name for the subscriber: ");
+
+                        String name = userIn.nextLine();
+                        subscriber = new Subscriber(name);
+
+                        subscriber.connect(InetAddress.getLocalHost(), 4444);
+                    }
+                } else if(command.equals("disconnect")) {
+                    if(subscriber == null) {
+                        System.out.println("Please connect a subscriber first");
+                        continue;
+                    } else {
+                        subscriber.disconnect();
+                        break;
+                    }
+                } else if(command.equals("subscribe")) {
+                    if(subscriber == null) {
+                        System.out.println("Please connect a subscriber first");
+                        continue;
+                    } else {
+                        System.out.println("Enter Subject (e.g. NEWS or WEATHER): ");
+                        String subject = userIn.nextLine();
+
+                        subscriber.subscribe(subject);
+                    }
+                } else {
+                    System.out.println("Please enter a valid command,");
+                    System.out.println("Commands:\n- connect\n- subscribe\n- disconnect");
+                }
+            }
+
+            // subscriber.connect(InetAddress.getLocalHost(), 4444);
+            // subscriber.subscribe("NEWS");
+            // subscriber.disconnect();
         } catch(UnknownHostException e) {
             System.out.println("Host not known");
         }
