@@ -2,6 +2,7 @@ import java.net.Socket;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -12,9 +13,11 @@ public class Subscriber {
     private Socket socket;
     private PrintWriter out;
     private BufferedReader in;
+    private boolean isSubscribed;
 
     public Subscriber(String name) {
         this.name = name;
+        this.isSubscribed = false;
     }
 
     /**
@@ -51,6 +54,7 @@ public class Subscriber {
             String message = in.readLine();
 
             System.out.println(message);
+            isSubscribed = true;
         } catch(IOException e) {
             e.printStackTrace();
         }
@@ -68,9 +72,33 @@ public class Subscriber {
             out.close();
             in.close();
             socket.close();
+
+            isSubscribed = false;
         } catch(IOException e) {
             System.out.println("Error disconnecting");
         }
+    }
+
+    public void checkMessages() {
+        try {
+            socket.setSoTimeout(1000);
+            String message;
+            
+            while (true) {
+                try {
+                    message = in.readLine();
+                    System.out.println(message);
+                } catch(SocketTimeoutException e) {
+                    break;
+                }
+            }
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean isSubscribed() {
+        return isSubscribed;
     }
     
     public static void main(String[] args) {
@@ -78,7 +106,7 @@ public class Subscriber {
             Subscriber subscriber = null;
             Scanner userIn = new Scanner(System.in);
             String command = "";
-            System.out.println("Commands:\n- connect\n- subscribe\n- disconnect");
+            System.out.println("Commands:\n- connect\n- subscribe\n- check\n- disconnect");
 
             while(true) {
                 System.out.print("Enter Command: ");
@@ -114,15 +142,20 @@ public class Subscriber {
 
                         subscriber.subscribe(subject);
                     }
+                } else if(command.equals("check")) {
+                    if(subscriber == null) {
+                        System.out.println("Please connect a subscriber first");
+                        continue;
+                    } else {
+                        System.out.println("Received messages:");
+                        subscriber.checkMessages();
+                        System.out.println("End of messages");
+                    }
                 } else {
                     System.out.println("Please enter a valid command,");
-                    System.out.println("Commands:\n- connect\n- subscribe\n- disconnect");
+                    System.out.println("Commands:\n- connect\n- subscribe\n- check\n- disconnect");
                 }
             }
-
-            // subscriber.connect(InetAddress.getLocalHost(), 4444);
-            // subscriber.subscribe("NEWS");
-            // subscriber.disconnect();
         } catch(UnknownHostException e) {
             System.out.println("Host not known");
         }

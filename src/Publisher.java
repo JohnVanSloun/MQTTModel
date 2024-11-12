@@ -1,3 +1,4 @@
+
 import java.net.Socket;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
@@ -122,10 +123,7 @@ public class Publisher {
                     System.out.println("Commands:\n- connect\n- publish\n- disconnect");
                 }
             }
-            // Publisher publisher = new Publisher("pub1");
-            // publisher.connect(InetAddress.getLocalHost(), 4444);
-            // publisher.publish("NEWS", "A plane has hit the second tower");
-            // publisher.disconnect();
+
         } catch(UnknownHostException e) {
             System.out.println("Host not known");
         }

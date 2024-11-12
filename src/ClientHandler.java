@@ -47,6 +47,7 @@ public class ClientHandler implements Runnable {
                     }
                 } else if(msgParts.size() == 4 && msgParts.get(1).equals("PUB")) {
                     if(server.publish(msgParts.get(2), msgParts.get(3))) {
+                        out.println("ACK");
                         System.out.println("Received: " + message);
                     } else {
                         out.println("ERROR: Not Subscribed");
@@ -54,7 +55,6 @@ public class ClientHandler implements Runnable {
                     }
                 } else {
                     System.out.println("Here");
-                    //out.println("ACK");
                 }
             }
 
