@@ -79,6 +79,9 @@ public class Subscriber {
         }
     }
 
+    /**
+     * Reads all messages received by the subscriber and prints them
+     */
     public void checkMessages() {
         try {
             socket.setSoTimeout(1000);
@@ -97,6 +100,9 @@ public class Subscriber {
         }
     }
 
+    /**
+     * Checks if the subscriber is currently subscribed to a subject
+     */
     public boolean isSubscribed() {
         return isSubscribed;
     }

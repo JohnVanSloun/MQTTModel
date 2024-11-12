@@ -26,6 +26,12 @@ public class Server {
         }
     }
 
+    /**
+     * Subscribes a ClientHandler to the subject provided.
+     * 
+     * param: subject, the subject to be subscribed to
+     * param: sub, the ClientHandler to subscribe to the subject
+     */
     public boolean subscribe(String subject, ClientHandler sub) {
         try {
             Socket subSocket = sub.getSocket();
@@ -46,10 +52,23 @@ public class Server {
         
     }
 
+    /**
+     * param sub, the ClientHandler to be unsubscribed
+     */
     public void unsubscribe(ClientHandler sub) {
-        subscribers.remove(sub);
+        List<ClientHandler> news = subscribers.get("NEWS");
+        List<ClientHandler> weather = subscribers.get("WEATHER");
+
+        news.remove(sub);
+        weather.remove(sub);
     }
 
+    /**
+     * Publish a message to a given subject
+     * 
+     * param: subject the subject to be published to
+     * param: message, the message to be published
+     */
     public boolean publish(String subject, String message) {
         try {
             if(subscribers.containsKey(subject) && !subscribers.get(subject).isEmpty()) {
