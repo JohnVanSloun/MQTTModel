@@ -65,7 +65,7 @@ public class Subscriber {
      */
     public void disconnect() {
         try {
-            out.println("DISC");
+            out.println("DISC, " + name);
             String disconnectAck = in.readLine();
 
             System.out.println(disconnectAck);

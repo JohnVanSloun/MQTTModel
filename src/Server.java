@@ -12,15 +12,15 @@ import java.net.InetAddress;
 
 public class Server {
     private ServerSocket serverSocket;
-    private HashMap<String, List<ClientHandler>> subscribers;
+    private HashMap<String, List<Client>> subscribers;
 
     public Server(int port) {
         try {
             serverSocket = new ServerSocket(port);
 
-            subscribers = new HashMap<String, List<ClientHandler>>();
-            subscribers.put("WEATHER", new ArrayList<ClientHandler>());
-            subscribers.put("NEWS", new ArrayList<ClientHandler>());
+            subscribers = new HashMap<String, List<Client>>();
+            subscribers.put("WEATHER", new ArrayList<Client>());
+            subscribers.put("NEWS", new ArrayList<Client>());
         } catch(IOException e) {
             System.out.println("Error instantiating server");
         }
@@ -32,13 +32,14 @@ public class Server {
      * param: subject, the subject to be subscribed to
      * param: sub, the ClientHandler to subscribe to the subject
      */
-    public boolean subscribe(String subject, ClientHandler sub) {
+    public boolean subscribe(String subject, String name, ClientHandler sub) {
         try {
             Socket subSocket = sub.getSocket();
             PrintWriter subOut = new PrintWriter(subSocket.getOutputStream(), true);
 
             if(subscribers.containsKey(subject)) {
-                subscribers.get(subject).add(sub);
+                Client client = new Client(name, sub);
+                subscribers.get(subject).add(client);
                 subOut.println("SUB_ACK");
                 return true;
             } else {
@@ -55,12 +56,21 @@ public class Server {
     /**
      * param sub, the ClientHandler to be unsubscribed
      */
-    public void unsubscribe(ClientHandler sub) {
-        List<ClientHandler> news = subscribers.get("NEWS");
-        List<ClientHandler> weather = subscribers.get("WEATHER");
+    public void unsubscribe(String name) {
+        List<Client> news = subscribers.get("NEWS");
+        List<Client> weather = subscribers.get("WEATHER");
 
-        news.remove(sub);
-        weather.remove(sub);
+        for (Client sub : news) {
+            if(sub.getName().equals(name)) {
+                news.remove(sub);
+            }
+        }
+
+        for (Client sub : weather) {
+            if(sub.getName().equals(name)) {
+                weather.remove(sub);
+            }
+        }
     }
 
     /**
@@ -70,23 +80,15 @@ public class Server {
      * param: message, the message to be published
      */
     public boolean publish(String subject, String message) {
-        try {
-            if(subscribers.containsKey(subject) && !subscribers.get(subject).isEmpty()) {
-                List<ClientHandler> subList = subscribers.get(subject);
+        if(subscribers.containsKey(subject) && !subscribers.get(subject).isEmpty()) {
+            List<Client> subList = subscribers.get(subject);
 
-                for(ClientHandler sub : subList) {
-                    Socket subSocket = sub.getSocket();
-                    PrintWriter subOut = new PrintWriter(subSocket.getOutputStream(), true);
-
-                    subOut.println(message);
-                }
-
-                return true;
-            } else {
-                return false;
+            for(Client sub : subList) {
+                sub.sendMsg(message);
             }
-        } catch(IOException e) {
-            System.out.println("Error publishing message");
+
+            return true;
+        } else {
             return false;
         }
     }

@@ -31,8 +31,8 @@ public class ClientHandler implements Runnable {
                 message = in.readLine();
                 List<String> msgParts = Arrays.asList(message.split(","));
 
-                if(msgParts.size() == 1 && msgParts.get(0).equals("DISC")) {
-                    server.unsubscribe(this);
+                if(msgParts.size() == 2 && msgParts.get(0).equals("DISC")) {
+                    server.unsubscribe(msgParts.get(1));
                     out.println("DISC_ACK");
                     System.out.println("Client Disconecting");
                     break;
@@ -40,7 +40,7 @@ public class ClientHandler implements Runnable {
                     System.out.println("Client: " + msgParts.get(0) + " has connected");
                     out.println("CONN_ACK");
                 } else if(msgParts.size() == 3 && msgParts.get(1).equals("SUB")) {
-                    if(server.subscribe(msgParts.get(2), this)) {
+                    if(server.subscribe(msgParts.get(2), msgParts.get(1), this)) {
                         System.out.println(msgParts.get(0) + " subscribed");
                     } else {
                         System.out.println("Error: Could not subscribe");
