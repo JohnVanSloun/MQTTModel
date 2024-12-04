@@ -12,15 +12,13 @@ import java.net.InetAddress;
 
 public class Server {
     private ServerSocket serverSocket;
-    private HashMap<String, List<Client>> subscribers;
+    private List<Client> subscribers;
 
     public Server(int port) {
         try {
             serverSocket = new ServerSocket(port);
 
-            subscribers = new HashMap<String, List<Client>>();
-            subscribers.put("WEATHER", new ArrayList<Client>());
-            subscribers.put("NEWS", new ArrayList<Client>());
+            subscribers = new ArrayList<Client>();
         } catch(IOException e) {
             System.out.println("Error instantiating server");
         }
@@ -32,20 +30,38 @@ public class Server {
      * param: subject, the subject to be subscribed to
      * param: sub, the ClientHandler to subscribe to the subject
      */
-    public boolean subscribe(String subject, String name, ClientHandler sub) {
+    public boolean subscribe(String subject, String name, ClientHandler handler) {
         try {
-            Socket subSocket = sub.getSocket();
+            Socket subSocket = handler.getSocket();
             PrintWriter subOut = new PrintWriter(subSocket.getOutputStream(), true);
 
-            if(subscribers.containsKey(subject)) {
-                Client client = new Client(name, sub);
-                subscribers.get(subject).add(client);
-                subOut.println("SUB_ACK");
-                return true;
-            } else {
+            if (!subject.equals("NEWS") && !subject.equals("WEATHER")) {
                 subOut.println("Failed to subscribe to given subject");
                 return false;
             }
+
+            boolean exists = false;
+
+            for (Client sub : subscribers) {
+                if (sub.getName().equals(name)) {
+                    exists = true;
+
+                    if (!sub.getSubjects().contains(subject)) {
+                        sub.getSubjects().add(subject);
+                    }
+                }
+            }
+
+            if (!exists) {
+                Client client = new Client(name, handler);
+                client.getSubjects().add(subject);
+
+                subscribers.add(client);
+            }
+
+            subOut.println("SUB_ACK");
+            return true;
+
         } catch(IOException e) {
             e.printStackTrace();
             return false;
@@ -57,18 +73,9 @@ public class Server {
      * param sub, the ClientHandler to be unsubscribed
      */
     public void unsubscribe(String name) {
-        List<Client> news = subscribers.get("NEWS");
-        List<Client> weather = subscribers.get("WEATHER");
-
-        for (Client sub : news) {
-            if(sub.getName().equals(name)) {
-                news.remove(sub);
-            }
-        }
-
-        for (Client sub : weather) {
-            if(sub.getName().equals(name)) {
-                weather.remove(sub);
+        for (Client sub : subscribers) {
+            if (sub.getName().equals(name)) {
+                subscribers.remove(sub);
             }
         }
     }
@@ -80,17 +87,37 @@ public class Server {
      * param: message, the message to be published
      */
     public boolean publish(String subject, String message) {
-        if(subscribers.containsKey(subject) && !subscribers.get(subject).isEmpty()) {
-            List<Client> subList = subscribers.get(subject);
+        boolean published = false;
 
-            for(Client sub : subList) {
+        for (Client sub : subscribers) {
+            if (sub.getSubjects().contains(subject)) {
+                published = true;
                 sub.sendMsg(message);
             }
-
-            return true;
-        } else {
-            return false;
         }
+
+        return published;
+    }
+
+    public void discSub(String subName) {
+        for (Client sub : subscribers) {
+            if (sub.getName().equals(subName)) {
+                sub.disconnect();
+            }
+        }
+    }
+
+    public boolean reconnSub(String subName, ClientHandler handler) {
+        boolean reconnected = false;
+
+        for (Client sub : subscribers) {
+            if (sub.getName().equals(subName)) {
+                sub.reconnect(handler);
+                reconnected = true;
+            }
+        }
+
+        return reconnected;
     }
 
     public ServerSocket getSocket() {
@@ -102,7 +129,6 @@ public class Server {
         
 
         try {
-            //server.subscribe("NEWS", new ClientHandler(new Socket(InetAddress.getLocalHost(), 4444), server));
             while(true) {
                 Socket clientSocket = server.getSocket().accept();
 

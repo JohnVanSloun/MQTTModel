@@ -38,6 +38,10 @@ public class Client {
                 System.out.println("Error publishing message");
             }
         } else {
+            if (msgQueue.isEmpty()) {
+                msgQueue.add("RECONNECT_ACK");
+            }
+
             msgQueue.add(msg);
         }
     }
@@ -46,8 +50,9 @@ public class Client {
         online = false;
     }
 
-    public void reconnect() {
+    public void reconnect(ClientHandler clientHandler) {
         online = true;
+        handler = clientHandler;
 
         try {
             Socket socket = handler.getSocket();
@@ -69,5 +74,9 @@ public class Client {
 
     public boolean getOnlineStatus() {
         return online;
+    }
+
+    public List<String> getSubjects() {
+        return subjects;
     }
 }

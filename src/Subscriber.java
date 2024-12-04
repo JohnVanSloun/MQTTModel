@@ -65,7 +65,7 @@ public class Subscriber {
      */
     public void disconnect() {
         try {
-            out.println("DISC, " + name);
+            out.println("DISC," + name);
             String disconnectAck = in.readLine();
 
             System.out.println(disconnectAck);
@@ -76,6 +76,24 @@ public class Subscriber {
             isSubscribed = false;
         } catch(IOException e) {
             System.out.println("Error disconnecting");
+        }
+    }
+
+    public void reconnect(InetAddress host, int port) {
+        try {
+            socket = new Socket(host, port);
+            out = new PrintWriter(socket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            out.println("RECONNECT," + name);
+
+            String reconnectAck = in.readLine();
+
+            System.out.println(reconnectAck);
+
+            isSubscribed = true;
+        } catch(IOException e) {
+            System.out.println("Error reconnecting");
         }
     }
 
@@ -112,7 +130,7 @@ public class Subscriber {
             Subscriber subscriber = null;
             Scanner userIn = new Scanner(System.in);
             String command = "";
-            System.out.println("Commands:\n- connect\n- subscribe\n- check\n- disconnect");
+            System.out.println("Commands:\n- connect\n- reconnect\n- subscribe\n- check\n- disconnect");
 
             while(true) {
                 System.out.print("Enter Command: ");
@@ -130,13 +148,19 @@ public class Subscriber {
 
                         subscriber.connect(InetAddress.getLocalHost(), 4444);
                     }
+                } else if(command.equals("reconnect")) {
+                    if(subscriber == null) {
+                        System.out.println("Please connect a subscriber first");
+                        continue;
+                    } else {
+                        subscriber.reconnect(InetAddress.getLocalHost(), 4444);
+                    }
                 } else if(command.equals("disconnect")) {
                     if(subscriber == null) {
                         System.out.println("Please connect a subscriber first");
                         continue;
                     } else {
                         subscriber.disconnect();
-                        break;
                     }
                 } else if(command.equals("subscribe")) {
                     if(subscriber == null) {
