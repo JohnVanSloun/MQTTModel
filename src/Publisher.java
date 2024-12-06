@@ -79,7 +79,7 @@ public class Publisher {
             Publisher publisher = null; //= new Publisher("pub1");
             Scanner userIn = new Scanner(System.in);
             String command = "";
-            System.out.println("Commands:\n- connect\n- publish\n- disconnect");
+            System.out.println("Commands:\n- connect\n- publish\n- disconnect\n- quit");
 
             while(true) {
                 System.out.print("Enter Command: ");
@@ -103,7 +103,6 @@ public class Publisher {
                         continue;
                     } else {
                         publisher.disconnect();
-                        break;
                     }
                 } else if(command.equals("publish")) {
                     if(publisher == null) {
@@ -118,6 +117,8 @@ public class Publisher {
 
                         publisher.publish(subject, message);
                     }
+                } else if(command.equals("quit")) {
+                    break;
                 } else {
                     System.out.println("Please enter a valid command,");
                     System.out.println("Commands:\n- connect\n- publish\n- disconnect");

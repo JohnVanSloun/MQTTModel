@@ -130,7 +130,7 @@ public class Subscriber {
             Subscriber subscriber = null;
             Scanner userIn = new Scanner(System.in);
             String command = "";
-            System.out.println("Commands:\n- connect\n- reconnect\n- subscribe\n- check\n- disconnect");
+            System.out.println("Commands:\n- connect\n- reconnect\n- subscribe\n- check\n- disconnect\n- quit");
 
             while(true) {
                 System.out.print("Enter Command: ");
@@ -181,6 +181,8 @@ public class Subscriber {
                         subscriber.checkMessages();
                         System.out.println("End of messages");
                     }
+                } else if(command.equals("quit")) {
+                    break;
                 } else {
                     System.out.println("Please enter a valid command,");
                     System.out.println("Commands:\n- connect\n- subscribe\n- check\n- disconnect");
