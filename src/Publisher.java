@@ -103,6 +103,7 @@ public class Publisher {
                         continue;
                     } else {
                         publisher.disconnect();
+                        publisher = null;
                     }
                 } else if(command.equals("publish")) {
                     if(publisher == null) {
